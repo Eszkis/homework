@@ -12,28 +12,29 @@ def separate_line_number_to_number_list(raw_data_lines):
 
 
 def convert_line_number_to_integer(line_number):
-    if line_number[0] == '   ' and line_number[1] == '  |' and line_number[2] == '  |':
+    number = line_number[0] + line_number[1] + line_number[2]
+    if number == '     |  |':
         return 1
-    elif line_number[0] == ' _ ' and line_number[1] == ' _|' and line_number[2] == '|_ ':
+    elif number == ' _  _||_ ':
         return 2
-    elif line_number[0] == ' _ ' and line_number[1] == ' _|' and line_number[2] == ' _|':
+    elif number == ' _  _| _|':
         return 3
-    elif line_number[0] == '   ' and line_number[1] == '|_|' and line_number[2] == '  |':
+    elif number == '   |_|  |':
         return 4
-    elif line_number[0] == ' _ ' and line_number[1] == '|_ ' and line_number[2] == ' _|':
+    elif number == ' _ |_  _|':
         return 5
-    elif line_number[0] == ' _ ' and line_number[1] == '|_ ' and line_number[2] == '|_|':
+    elif number == ' _ |_ |_|':
         return 6
-    elif line_number[0] == ' _ ' and line_number[1] == '  |' and line_number[2] == '  |':
+    elif number == ' _   |  |':
         return 7
-    elif line_number[0] == ' _ ' and line_number[1] == '|_|' and line_number[2] == '|_|':
+    elif number == ' _ |_||_|':
         return 8
-    elif line_number[0] == ' _ ' and line_number[1] == '|_|' and line_number[2] == ' _|':
+    elif number == ' _ |_| _|':
         return 9
-    elif line_number[0] == ' _ ' and line_number[1] == '| |' and line_number[2] == '|_|':
+    elif number == ' _ | ||_|':
         return 0
     else:
-        return "?"
+        return "?" + number + "?"
 
 
 def convert_line_account_numbers_to_int_account_numbers(raw_data_lines):
@@ -56,8 +57,8 @@ def calculate_check_sum(account_number):
 
 
 def validate_account_number(account_number):
-    if "?" in account_number:
-        account_number += " ILL"
+    if len(account_number) > 9:
+        account_number = guess_wrong_scan(account_number)
     elif calculate_check_sum(account_number) != 0:
         valid_account_numbers = change_number(account_number)
         if len(valid_account_numbers) == 0:
@@ -70,6 +71,45 @@ def validate_account_number(account_number):
                 account_number += alternative + "', '"
             account_number = account_number[:-4] + "']"
     return account_number
+
+
+def guess_wrong_scan(invalid_scan_input):
+    valid_numbers = {
+        '     |  |': 1,
+        ' _  _||_ ': 2,
+        ' _  _| _|': 3,
+        '   |_|  |': 4,
+        ' _ |_  _|': 5,
+        ' _ |_ |_|': 6,
+        ' _   |  |': 7,
+        ' _ |_||_|': 8,
+        ' _ |_| _|': 9,
+        ' _ | ||_|': 0
+    }
+
+    splited_number = invalid_scan_input.split("?")
+    new_number = ""
+    possible_numbers = []
+    for element in splited_number:
+        if " " in element:
+            for valid in valid_numbers.keys():
+                if calculate_difference(valid, element) == 1:
+                    possible_numbers.append(valid_numbers[valid])
+            new_number += "?"
+        else:
+            new_number += element
+    new_number = possible_new_number_guesser(new_number, possible_numbers)
+    return new_number
+
+
+def possible_new_number_guesser(invalid_number, possible_numbers):
+    index = invalid_number.find("?")
+    valid_number = 0
+    for number in possible_numbers:
+        possible_number = str(invalid_number[0:index]) + str(number) + str(invalid_number[index + 1:])
+        if calculate_check_sum(possible_number) == 0:
+            valid_number = possible_number
+    return valid_number
 
 
 def change_number(account_number):
@@ -92,3 +132,11 @@ def change_number(account_number):
                 if calculate_check_sum(new_account) == 0:
                     valid_account_numbers.append(new_account)
     return valid_account_numbers
+
+
+def calculate_difference(original_string, new_string):
+    difference = 0
+    for index in range(len(original_string)):
+        if original_string[index] != new_string[index]:
+            difference += 1
+    return difference
