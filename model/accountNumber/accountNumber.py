@@ -52,12 +52,12 @@ def calculate_check_sum(account_number):
     sum = 0
     for number in account_number:
         sum += int(number) * (9 - account_number.find(number))
-    return sum % 11 == 0
+    return sum % 11
 
 
 def validate_account_number(account_number):
     if "?" in account_number:
         account_number += " ILL"
-    elif not calculate_check_sum(account_number):
+    elif calculate_check_sum(account_number) != 0:
         account_number += " ERR"
     return account_number
