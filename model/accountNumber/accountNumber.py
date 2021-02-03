@@ -50,8 +50,8 @@ def convert_line_account_numbers_to_int_account_numbers(raw_data_lines):
 
 def calculate_check_sum(account_number):
     sum = 0
-    for number in account_number:
-        sum += int(number) * (9 - account_number.find(number))
+    for index in range(len(account_number)):
+        sum += int(account_number[index]) * (9 - index)
     return sum % 11
 
 
@@ -59,5 +59,36 @@ def validate_account_number(account_number):
     if "?" in account_number:
         account_number += " ILL"
     elif calculate_check_sum(account_number) != 0:
-        account_number += " ERR"
+        valid_account_numbers = change_number(account_number)
+        if len(valid_account_numbers) == 0:
+            account_number += " ERR"
+        elif len(valid_account_numbers) == 1:
+            account_number = valid_account_numbers[0]
+        else:
+            account_number += " AMB ['"
+            for alternative in valid_account_numbers:
+                account_number += alternative + "', '"
+            account_number = account_number[:-4] + "']"
     return account_number
+
+
+def change_number(account_number):
+    valid_account_numbers = []
+    changeable_values = {
+        "0": ["8"],
+        "1": ["7"],
+        "3": ["9"],
+        "5": ["6", "9"],
+        "6": ["5", "8"],
+        "7": ["1"],
+        "8": ["0", "6", "9"],
+        "9": ["3", "5", "8"]
+    }
+    for index in range(len(account_number)):
+        char = account_number[index]
+        if char in changeable_values.keys():
+            for changed in changeable_values[char]:
+                new_account = account_number[0:index] + changed + account_number[index + 1:]
+                if calculate_check_sum(new_account) == 0:
+                    valid_account_numbers.append(new_account)
+    return valid_account_numbers
