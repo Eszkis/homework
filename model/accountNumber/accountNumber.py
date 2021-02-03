@@ -48,3 +48,10 @@ def convert_line_account_numbers_to_int_account_numbers(raw_data_lines):
             account_number += str(convert_line_number_to_integer(number))
         account_numbers.append(str(account_number))
     return account_numbers
+
+
+def calculate_check_sum(account_number):
+    sum = 0
+    for number in account_number:
+        sum += int(number) * (9 - account_number.find(number))
+    return sum % 11 == 0
