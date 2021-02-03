@@ -37,3 +37,14 @@ def convert_line_number_to_integer(line_number):
         return 0
     else:
         return "?"
+
+
+def convert_line_account_numbers_to_int_account_numbers(raw_data_lines):
+    line_account_numbers = separate_line_number_to_number_list(raw_data_lines)
+    account_numbers = []
+    for line_account_number in line_account_numbers:
+        account_number = ""
+        for number in line_account_number:
+            account_number += str(convert_line_number_to_integer(number))
+        account_numbers.append(str(account_number))
+    return account_numbers
