@@ -13,26 +13,27 @@ def separate_line_number_to_number_list(raw_data_lines):
 
 def convert_line_number_to_integer(line_number):
     number = line_number[0] + line_number[1] + line_number[2]
-    if number == '     |  |':
-        return 1
-    elif number == ' _  _||_ ':
-        return 2
-    elif number == ' _  _| _|':
-        return 3
-    elif number == '   |_|  |':
-        return 4
-    elif number == ' _ |_  _|':
-        return 5
-    elif number == ' _ |_ |_|':
-        return 6
-    elif number == ' _   |  |':
-        return 7
-    elif number == ' _ |_||_|':
-        return 8
-    elif number == ' _ |_| _|':
-        return 9
-    elif number == ' _ | ||_|':
-        return 0
+    valid_numbers = {
+        ' _ | ||_|': 0,
+        '     |  |': 1,
+        ' _  _||_ ': 2,
+        ' _  _| _|': 3,
+        '   |_|  |': 4,
+        ' _ |_  _|': 5,
+        ' _ |_ |_|': 6,
+        ' _   |  |': 7,
+        ' _ |_||_|': 8,
+        ' _ |_| _|': 9,
+        ' _ |_|| |': 10,
+        ' _ |_\|_/': 11,
+        ' _ |  |_ ': 12,
+        ' _ | \|_/': 13,
+        ' _ |_ |_ ': 14,
+        ' _ |_ |  ': 15
+    }
+
+    if number in valid_numbers.keys():
+        return valid_numbers[number]
     else:
         return "?" + number + "?"
 
@@ -41,10 +42,10 @@ def convert_line_account_numbers_to_int_account_numbers(raw_data_lines):
     line_account_numbers = separate_line_number_to_number_list(raw_data_lines)
     account_numbers = []
     for line_account_number in line_account_numbers:
-        account_number = ""
+        account_number = []
         for number in line_account_number:
-            account_number += str(convert_line_number_to_integer(number))
-        validated_account_number = validate_account_number(str(account_number))
+            account_number.append(str(convert_line_number_to_integer(number)))
+        validated_account_number = validate_account_number(account_number)
         account_numbers.append(validated_account_number)
     return account_numbers
 
@@ -57,19 +58,21 @@ def calculate_check_sum(account_number):
 
 
 def validate_account_number(account_number):
-    if len(account_number) > 9:
+    if "?" in list_to_string(account_number):
         account_number = guess_wrong_scan(account_number)
     elif calculate_check_sum(account_number) != 0:
         valid_account_numbers = change_number(account_number)
         if len(valid_account_numbers) == 0:
-            account_number += " ERR"
+            account_number = account_number_to_string(account_number) + " ERR"
         elif len(valid_account_numbers) == 1:
-            account_number = valid_account_numbers[0]
+            account_number = account_number_to_string(valid_account_numbers[0])
         else:
-            account_number += " AMB ['"
+            account_number = account_number_to_string(account_number) + " AMB ['"
             for alternative in valid_account_numbers:
-                account_number += alternative + "', '"
+                account_number += account_number_to_string(alternative) + "', '"
             account_number = account_number[:-4] + "']"
+    else:
+        account_number = account_number_to_string(account_number)
     return account_number
 
 
@@ -84,10 +87,16 @@ def guess_wrong_scan(invalid_scan_input):
         ' _   |  |': 7,
         ' _ |_||_|': 8,
         ' _ |_| _|': 9,
-        ' _ | ||_|': 0
+        ' _ | ||_|': 0,
+        ' _ |_|| |': 10,
+        ' _ |_\|_/': 11,
+        ' _ |  |_ ': 12,
+        ' _ | \|_/': 13,
+        ' _ |_ |_ ': 14,
+        ' _ |_ |  ': 15
     }
 
-    splited_number = invalid_scan_input.split("?")
+    splited_number = list_to_string(invalid_scan_input).split("?")
     new_number = ""
     possible_numbers = []
     for element in splited_number:
@@ -121,14 +130,21 @@ def change_number(account_number):
         "5": ["6", "9"],
         "6": ["5", "8"],
         "7": ["1"],
-        "8": ["0", "6", "9"],
-        "9": ["3", "5", "8"]
+        "8": ["0", "6", "9", "10"],
+        "9": ["3", "5", "8"],
+        "10": ["8"],
+        "11": ["13"],
+        "12": ["14"],
+        "13": ["11"],
+        "14": ["12", "15"],
+        "15": ["14"]
     }
     for index in range(len(account_number)):
         char = account_number[index]
         if char in changeable_values.keys():
             for changed in changeable_values[char]:
-                new_account = account_number[0:index] + changed + account_number[index + 1:]
+                new_account = account_number.copy()
+                new_account[index] = changed
                 if calculate_check_sum(new_account) == 0:
                     valid_account_numbers.append(new_account)
     return valid_account_numbers
@@ -140,3 +156,35 @@ def calculate_difference(original_string, new_string):
         if original_string[index] != new_string[index]:
             difference += 1
     return difference
+
+
+def list_to_string(s):
+    string = ""
+    for element in s:
+        string += element
+    return string
+
+
+def account_number_to_string(s):
+    valid_numbers = {
+        '0': '0',
+        '1': '1',
+        '2': '2',
+        '3': '3',
+        '4': '4',
+        '5': '5',
+        '6': '6',
+        '7': '7',
+        '8': '8',
+        '9': '9',
+        '10': 'a',
+        '11': 'b',
+        '12': 'c',
+        '13': 'd',
+        '14': 'e',
+        '15': 'f'
+    }
+    string = ""
+    for element in s:
+        string += valid_numbers[element]
+    return string
