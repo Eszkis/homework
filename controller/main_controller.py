@@ -1,6 +1,6 @@
 from view import terminal as view
 from controller import userStory1Controller, userStory2Controller, userStory3Controller, userStory4Controller, \
-    userStory5Controller
+    userStory5Controller, customController
 
 
 def load_module(option):
@@ -14,6 +14,8 @@ def load_module(option):
         userStory4Controller.run()
     elif option == 5:
         userStory5Controller.run()
+    elif option == 6:
+        customController.run()
     elif option == 0:
         return 0
     else:

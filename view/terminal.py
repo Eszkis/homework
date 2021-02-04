@@ -23,7 +23,7 @@ def get_input(label):
     Args:
         label: str - the label before the user prompt
     """
-    valid_input = "012345"
+    valid_input = "0123456"
     label = label.lower()
     single_input = input(label + "\n")
     while single_input not in valid_input:
